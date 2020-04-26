@@ -1,13 +1,15 @@
-FROM node:8.11.2
-RUN apt-get clean && apt-get update
-RUN apt-get install -y nginx
-WORKDIR /app
-COPY . /app/
-EXPOSE 80
-RUN npm install \
- && npm run build \
- && cp -r dist/* /var/www/html \
- && rm -rf /app
-CMD ["nginx","-g","daemon off;"]
+FROM node:12.16.1
+COPY package.json /usr/src/app/
+WORKDIR /usr/src/app
+
+RUN npm install
+COPY . /usr/src/app/
+RUN npm run build
+
+FROM nginx:1.14.2
+
+COPY --from=builder /usr/src/app/build /usr/share/nginx/html
+ADD nginx.conf /etc/nginx/conf.d/default.conf
+
 
  
